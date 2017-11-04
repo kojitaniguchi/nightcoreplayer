@@ -48,3 +48,10 @@ object Observable {
   def addListener(listener: Listener) = listeners = listeners :+ listener
 }
 
+Observable.addListener(new Listener {
+  override def changed(newValue: Int): Unit = println(s"${newValue} に変わったよ")
+})
+
+Observable.increment()
+Observable.increment()
+Observable.increment()
