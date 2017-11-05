@@ -15,6 +15,11 @@ object Main extends App {
 
 class Main extends Application {
 
+　private[this] val mediaViewFitWidth = 800
+  private[this] val mediaViewFitHeight = 450
+  private[this] val toolBarMinHeight = 50
+
+
   override def start(primaryStage: Stage): Unit = {
     val path = "/Users/username/Desktop/videoname.mp4"
     val media = new Media(new File(path).toURI.toString)
@@ -25,7 +30,6 @@ class Main extends Application {
     val baseBorderPane = new BorderPane()
     baseBorderPane.setStyle("-fx-background-color: Black")
     baseBorderPane.setCenter(mediaView)
-    val scene = new Scene(baseBorderPane, 800, 500)
     scene.setFill(Color.BLACK)
     primaryStage.setScene(scene)
     primaryStage.show()
