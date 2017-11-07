@@ -1,61 +1,88 @@
-package mediaplayer.nightcoreplayer
+package jp.ed.nnn.nightcoreplayer
 
-import java.io.File
 import javafx.application.Application
+import javafx.collections.FXCollections
+import javafx.event.EventHandler
 import javafx.scene.Scene
+import javafx.scene.control.cell.PropertyValueFactory
+import javafx.scene.control._
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.BorderPane
-import javafx.scene.media.{Media, MediaPlayer, MediaView}
+import javafx.scene.media.MediaView
 import javafx.scene.paint.Color
 import javafx.stage.Stage
+import javafx.util.Callback
+
+import jp.ed.nnn.nightcoreplayer.SizeConstants._
 
 object Main extends App {
   Application.launch(classOf[Main], args: _*)
-
 }
 
 class Main extends Application {
 
-　private[this] val mediaViewFitWidth = 800
-  private[this] val mediaViewFitHeight = 450
-  private[this] val toolBarMinHeight = 50
-
-
   override def start(primaryStage: Stage): Unit = {
-    val path = "/Users/username/Desktop/videoname.mp4"
-    val media = new Media(new File(path).toURI.toString)
-    val mediaPlayer = new MediaPlayer(media)
-    mediaPlayer.setRate(1.25)
-    mediaPlayer.play()
-    val mediaView = new MediaView(mediaPlayer)
+    val mediaView = new MediaView()
+
+    val timeLabel = new Label()
+    timeLabel.setText("00:00:00/00:00:00")
+    timeLabel.setTextFill(Color.WHITE)
+
+    val tableView = new TableView[Movie]()
+    tableView.setMinWidth(tableMinWidth)
+    val movies = FXCollections.observableArrayList[Movie]()
+    tableView.setItems(movies)
+    tableView.setRowFactory(new Callback[TableView[Movie], TableRow[Movie]]() {
+      override def call(param: TableView[Movie]): TableRow[Movie] = {
+        val row = new TableRow[Movie]()
+        row.setOnMouseClicked(new EventHandler[MouseEvent] {
+          override def handle(event: MouseEvent): Unit = {
+            if (event.getClickCount >= 1 && !row.isEmpty) {
+              MoviePlayer.play(row.getItem, tableView, mediaView, timeLabel)
+            }
+          }
+        })
+        row
+      }
+    })
+
+    val fileNameColumn = new TableColumn[Movie, String]("ファイル名")
+    fileNameColumn.setCellValueFactory(new PropertyValueFactory("fileName"))
+    fileNameColumn.setPrefWidth(160)
+    val timeColumn = new TableColumn[Movie, String]("時間")
+    timeColumn.setCellValueFactory(new PropertyValueFactory("time"))
+    timeColumn.setPrefWidth(80)
+    val deleteActionColumn = new TableColumn[Movie, Long]("削除")
+    deleteActionColumn.setCellValueFactory(new PropertyValueFactory("id"))
+    deleteActionColumn.setPrefWidth(60)
+    deleteActionColumn.setCellFactory(new Callback[TableColumn[Movie, Long], TableCell[Movie, Long]]() {
+      override def call(param: TableColumn[Movie, Long]): TableCell[Movie, Long] = {
+        new DeleteCell(movies, mediaView, tableView)
+      }
+    })
+
+    tableView.getColumns.setAll(fileNameColumn, timeColumn, deleteActionColumn)
+
     val baseBorderPane = new BorderPane()
+    val scene = new Scene(baseBorderPane, mediaViewFitWidth + tableMinWidth, mediaViewFitHeight + toolBarMinHeight)
+    val toolBar = ToolbarCreator.create(mediaView, tableView, timeLabel, scene, primaryStage)
+
     baseBorderPane.setStyle("-fx-background-color: Black")
     baseBorderPane.setCenter(mediaView)
+    baseBorderPane.setBottom(toolBar)
+    baseBorderPane.setRight(tableView)
+
     scene.setFill(Color.BLACK)
+    mediaView.fitWidthProperty().bind(scene.widthProperty().subtract(tableMinWidth))
+    mediaView.fitHeightProperty().bind(scene.heightProperty().subtract(toolBarMinHeight))
+
+    scene.setOnDragOver(new MovieFileDragOverEventHandler(scene))
+    scene.setOnDragDropped(new MovieFileDragDroppedEventHandler(movies))
+
+    primaryStage.setTitle("mp4ファイルをドラッグ&ドロップしてください")
+
     primaryStage.setScene(scene)
     primaryStage.show()
   }
+
 }
-
-trait Listener {
-  def changed(newValue: Int): Unit
-}
-
-object Observable {
-  private var num = 0
-  private var listeners = Seq[Listener]()
-
-  def increment(): Unit = {
-    num = num + 1
-    listeners.foreach(l => l.changed(num))
-  }
-
-  def addListener(listener: Listener) = listeners = listeners :+ listener
-}
-
-Observable.addListener(new Listener {
-  override def changed(newValue: Int): Unit = println(s"${newValue} に変わったよ")
-})
-
-Observable.increment()
-Observable.increment()
-Observable.increment()
