@@ -1,4 +1,4 @@
-package jp.ed.nnn.nightcoreplayer
+package mediaplayer.nightcoreplayer
 
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.scene.control.{Label, TableView}

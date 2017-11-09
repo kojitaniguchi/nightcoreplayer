@@ -1,4 +1,4 @@
-package jp.ed.nnn.nightcoreplayer
+package mediaplayer.nightcoreplayer
 
 import javafx.application.Application
 import javafx.collections.FXCollections
@@ -13,7 +13,7 @@ import javafx.scene.paint.Color
 import javafx.stage.Stage
 import javafx.util.Callback
 
-import jp.ed.nnn.nightcoreplayer.SizeConstants._
+import mediaplayer.nightcoreplayer.SizeConstants._
 
 object Main extends App {
   Application.launch(classOf[Main], args: _*)
